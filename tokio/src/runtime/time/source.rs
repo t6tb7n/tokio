@@ -1,4 +1,4 @@
-use super::MAX_SAFE_MILLIS_DURATION;
+use super::MAX_SAFE_NANOS_DURATION;
 use crate::time::{Clock, Duration, Instant};
 
 /// A structure which handles conversion from Instants to `u64` timestamps.
@@ -16,21 +16,21 @@ impl TimeSource {
 
     pub(crate) fn deadline_to_tick(&self, t: Instant) -> u64 {
         // Round up to the end of a ms
-        self.instant_to_tick(t + Duration::from_nanos(999_999))
+        self.instant_to_tick(t)
     }
 
     pub(crate) fn instant_to_tick(&self, t: Instant) -> u64 {
         // round up
         let dur: Duration = t.saturating_duration_since(self.start_time);
         let ms = dur
-            .as_millis()
+            .as_nanos()
             .try_into()
-            .unwrap_or(MAX_SAFE_MILLIS_DURATION);
-        ms.min(MAX_SAFE_MILLIS_DURATION)
+            .unwrap_or(MAX_SAFE_NANOS_DURATION);
+        ms.min(MAX_SAFE_NANOS_DURATION)
     }
 
     pub(crate) fn tick_to_duration(&self, t: u64) -> Duration {
-        Duration::from_millis(t)
+        Duration::from_nanos(t)
     }
 
     pub(crate) fn now(&self, clock: &Clock) -> u64 {
