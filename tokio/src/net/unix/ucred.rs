@@ -40,8 +40,11 @@ impl UCred {
 ))]
 pub(crate) use self::impl_linux::get_peer_cred;
 
-#[cfg(any(target_os = "netbsd", target_os = "nto"))]
+#[cfg(any(target_os = "netbsd", all(target_os = "nto", any(target_env = "nto71", target_env = "nto70"))))]
 pub(crate) use self::impl_netbsd::get_peer_cred;
+
+#[cfg(all(target_os = "nto", not(target_env = "nto71"), not(target_env = "nto70")))]
+pub(crate) use self::impl_nto_iosock::get_peer_cred;
 
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd"))]
 pub(crate) use self::impl_bsd::get_peer_cred;
@@ -127,7 +130,16 @@ pub(crate) mod impl_linux {
     }
 }
 
-#[cfg(any(target_os = "netbsd", target_os = "nto"))]
+#[cfg(all(target_os = "nto", not(target_env = "nto71"), not(target_env = "nto70")))]
+pub(crate) mod impl_nto_iosock {
+    use crate::net::unix::{self, UnixStream};
+    use std::{io, mem};
+    pub(crate) fn get_peer_cred(sock: &UnixStream) -> io::Result<super::UCred> {
+        unimplemented!()
+    }
+}
+
+#[cfg(any(target_os = "netbsd", all(target_os = "nto", any(target_env = "nto71", target_env = "nto70"))))]
 pub(crate) mod impl_netbsd {
     use crate::net::unix::{self, UnixStream};
 
